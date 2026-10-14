@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>咖啡店營運決策系統</title>
+  <style>
+    * { 
+      box-sizing: border-box; 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "微軟正黑體", sans-serif; 
+    }
+    body { 
+      background-color: #f0f2f5; 
+      margin: 0; 
+      padding: 24px; 
+      display: flex; 
+      justify-content: center; 
+    }
+    .container { 
+      background: #ffffff; 
+      width: 100%; 
+      max-width: 480px; 
+      padding: 24px; 
+      border-radius: 12px; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+    }
+    h2 { 
+      margin-top: 0; 
+      color: #1F4E79; 
+      text-align: center; 
+    }
+    .form-group { 
+      margin-bottom: 16px; 
+    }
+    label { 
+      display: block; 
+      font-weight: bold; 
+      margin-bottom: 6px; 
+      color: #333; 
+    }
+    input[type="number"] { 
+      width: 100%; 
+      padding: 10px; 
+      border: 1px solid #ccc; 
+      border-radius: 6px; 
+      font-size: 15px; 
+    }
+    .btn-row { 
+      display: flex; 
+      gap: 10px; 
+      margin-top: 20px; 
+    }
+    button { 
+      flex: 1; 
+      padding: 12px; 
+      font-size: 15px; 
+      font-weight: bold; 
+      border: none; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      transition: 0.2s; 
+    }
+    .btn-calc { 
+      background: #1F4E79; 
+      color: white; 
+    }
+    .btn-calc:hover { 
+      background: #153654; 
+    }
+    .btn-opt { 
+      background: #28a745; 
+      color: white; 
+    }
+    .btn-opt:hover { 
+      background: #1e7e34; 
+    }
+    .result-card { 
+      margin-top: 20px; 
+      padding: 16px; 
+      background: #f8f9fa; 
+      border-radius: 8px; 
+      border-left: 5px solid #1F4E79; 
+    }
+    .result-row { 
+      display: flex; 
+      justify-content: space-between; 
+      margin-bottom: 8px; 
+      font-size: 14px; 
+    }
+    .result-row.total { 
+      font-size: 16px; 
+      font-weight: bold; 
+      border-top: 1px dashed #ccc; 
+      padding-top: 8px; 
+      color: #d9534f; 
+    }
+    .status-badge { 
+      display: inline-block; 
+      padding: 2px 8px; 
+      border-radius: 4px; 
+      font-size: 12px; 
+      font-weight: bold; 
+    }
+    .valid { 
+      background: #d4edda; 
+      color: #155724; 
+    }
+    .invalid { 
+      background: #f8d7da; 
+      color: #721c24; 
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>☕ 咖啡店營運決策系統</h2>
+    
+    <div class="form-group">
+      <label for="coffee">預計銷售黑咖啡杯數 (杯)：</label>
+      <input type="number" id="coffee" value="0" min="0">
+    </div>
+
+    <div class="form-group">
+      <label for="latte">預計銷售拿鐵杯數 (杯)：</label>
+      <input type="number" id="latte" value="500" min="0">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-calc" onclick="calculate()">試算結果</button>
+      <button class="btn-opt" onclick="setOptimal()">代入最佳解</button>
+    </div>
+
+    <div class="result-card" id="resultCard">
+      <div class="result-row"><span>總營業收入：</span><span id="rev">35,000 元</span></div>
+      <div class="result-row"><span>原料總成本：</span><span id="matCost">10,000 元</span></div>
+      <div class="result-row"><span>固定人事成本 (2人×10h)：</span><span>4,000 元</span></div>
+      <div class="result-row">
+        <span>製作耗費工時：</span>
+        <span><span id="hours">20.0</span> / 20 小時 <span id="hourBadge" class="status-badge valid">符合工時</span></span>
+      </div>
+      <div class="result-row total"><span>每日營業淨利：</span><span id="profit">21,000 元</span></div>
+    </div>
+  </div>
+
+  <script>
+    function calculate() {
+      const coffee = Math.max(0, parseInt(document.getElementById('coffee').value) || 0);
+      const latte = Math.max(0, parseInt(document.getElementById('latte').value) || 0);
+
+      // 財務運算邏輯
+      const revenue = (coffee * 50) + (latte * 70);
+      const matCost = (coffee * 15) + (latte * 20);
+      const fixedLabor = 4000;
+      const hours = (coffee / 30.0) + (latte / 25.0);
+      const profit = revenue - matCost - fixedLabor;
+
+      // 渲染結果至畫面上
+      document.getElementById('rev').innerText = revenue.toLocaleString() + ' 元';
+      document.getElementById('matCost').innerText = matCost.toLocaleString() + ' 元';
+      document.getElementById('hours').innerText = hours.toFixed(1);
+      document.getElementById('profit').innerText = profit.toLocaleString() + ' 元';
+
+      const badge = document.getElementById('hourBadge');
+      if (hours <= 20.0001) {
+        badge.className = 'status-badge valid';
+        badge.innerText = '符合工時';
+      } else {
+        badge.className = 'status-badge invalid';
+        badge.innerText = '超出20小時！';
+      }
+    }
+
+    function setOptimal() {
+      document.getElementById('coffee').value = 0;
+      document.getElementById('latte').value = 500;
+      calculate();
+    }
+
+    // 頁面載入時先執行一次初始計算
+    window.onload = calculate;
+  </script>
+</body>
+</html>
