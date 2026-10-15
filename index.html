@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>網頁版線性規劃計算器 (LP Calculator)</title>
-  <!-- 引入開源線性規劃求解引擎 javascript-lp-solver -->
-  <script src="https://unpkg.com/javascript-lp-solver/prod/solver.js"></script>
   <style>
     :root {
       --primary: #1F4E79;
@@ -18,36 +16,36 @@
     }
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "微軟正黑體", sans-serif; }
     body { background-color: var(--bg); margin: 0; padding: 24px; color: #333; }
-    .container { max-width: 900px; margin: 0 auto; background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-    h1 { color: var(--primary); text-align: center; margin-top: 0; font-size: 26px; }
-    .section { margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
-    .section-title { font-size: 17px; font-weight: bold; margin-bottom: 12px; color: var(--primary); display: flex; align-items: center; justify-content: space-between; }
-    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+    .container { max-width: 920px; margin: 0 auto; background: var(--card-bg); padding: 28px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    h1 { color: var(--primary); text-align: center; margin-top: 0; font-size: 24px; }
+    .section { margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+    .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--primary); display: flex; align-items: center; justify-content: space-between; }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
     label { font-weight: 600; font-size: 14px; }
-    input[type="number"], input[type="text"], select {
-      padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none;
+    input[type="number"], select {
+      padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none;
     }
-    input[type="number"] { width: 90px; }
+    input[type="number"] { width: 85px; }
     button {
-      padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s;
+      padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s;
     }
     .btn-primary { background: var(--primary); color: white; }
     .btn-primary:hover { background: var(--primary-hover); }
     .btn-success { background: var(--success); color: white; }
     .btn-success:hover { background: #218838; }
-    .btn-danger { background: var(--danger); color: white; padding: 4px 10px; font-size: 12px; }
-    .btn-secondary { background: #6c757d; color: white; }
+    .btn-danger { background: var(--danger); color: white; padding: 5px 10px; font-size: 12px; }
+    .btn-secondary { background: #6c757d; color: white; padding: 6px 12px; font-size: 13px; }
     .math-preview {
-      background: #eef3f8; padding: 14px; border-radius: 8px; font-family: "Courier New", Courier, monospace; font-size: 15px; color: #112a42; white-space: pre-wrap; line-height: 1.6;
+      background: #eef3f8; padding: 14px; border-radius: 8px; font-family: "Courier New", Courier, monospace; font-size: 14px; color: #112a42; white-space: pre-wrap; line-height: 1.6;
     }
     table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    th, td { border: 1px solid var(--border); padding: 10px; text-align: center; font-size: 14px; }
+    th, td { border: 1px solid var(--border); padding: 9px; text-align: center; font-size: 13px; }
     th { background: #f8f9fa; color: var(--primary); }
-    .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+    .badge { padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
     .badge-binding { background: #f8d7da; color: #721c24; }
     .badge-nonbinding { background: #d4edda; color: #155724; }
     .result-box {
-      background: #f8f9fa; border-left: 5px solid var(--primary); padding: 16px; border-radius: 8px; margin-top: 16px; display: none;
+      background: #f8f9fa; border-left: 5px solid var(--primary); padding: 18px; border-radius: 8px; margin-top: 16px; display: none;
     }
   </style>
 </head>
@@ -56,14 +54,14 @@
 <div class="container">
   <h1>📊 網頁版線性規劃計算器 (LP Calculator)</h1>
 
-  <!-- 範本快選 (加分項: 管理科學模型範本) -->
+  <!-- 範本快選 -->
   <div class="section" style="background:#e8f4fd; padding:12px; border-radius:8px; border:none;">
     <span style="font-weight:bold; color:var(--primary);">💡 快速載入管理案例範本：</span>
-    <button class="btn-secondary" onclick="loadExample(1)">作業指引範例 (2變數/2限制式)</button>
-    <button class="btn-secondary" onclick="loadExample(2)">咖啡店營運決策 (產能配置)</button>
+    <button type="button" class="btn-secondary" onclick="loadExample(1)">作業指引範例 (Max 2變數)</button>
+    <button type="button" class="btn-secondary" onclick="loadExample(2)">咖啡店營運決策 (工時限制)</button>
   </div>
 
-  <!-- 1. 問題基本設定 -->
+  <!-- 1. 基本設定 -->
   <div class="section">
     <div class="section-title">1. 基本設定</div>
     <div class="row">
@@ -72,11 +70,11 @@
         <option value="max">Maximization (最大化)</option>
         <option value="min">Minimization (最小化)</option>
       </select>
-      <label style="margin-left: 15px;">變數數量：</label>
+      <label style="margin-left: 10px;">決策變數個數：</label>
       <input type="number" id="numVars" value="2" min="1" max="10">
-      <button class="btn-primary" onclick="initVariables()">更新變數欄位</button>
-      <label style="margin-left: 15px;">
-        <input type="checkbox" id="nonNegative" checked onchange="updateMathPreview()"> 限制所有變數為非負 (xᵢ ≥ 0)
+      <button type="button" class="btn-primary" onclick="changeVarCount()">更新變數欄位</button>
+      <label style="margin-left: 10px;">
+        <input type="checkbox" id="nonNegative" checked onchange="updateMathPreview()"> 變數非負限制 (xᵢ ≥ 0)
       </label>
     </div>
   </div>
@@ -91,26 +89,26 @@
   <div class="section">
     <div class="section-title">
       3. 限制式 (Constraints)
-      <button class="btn-success" onclick="addConstraintRow()">+ 新增限制式</button>
+      <button type="button" class="btn-success" onclick="addConstraintRow()">+ 新增限制式</button>
     </div>
     <div id="constraintsContainer"></div>
   </div>
 
-  <!-- 4. 數學模型即時預覽 -->
+  <!-- 4. 數學模型預覽 -->
   <div class="section">
     <div class="section-title">4. 數學模型預覽 (Mathematical Model)</div>
     <div id="mathModel" class="math-preview"></div>
   </div>
 
-  <!-- 5. 求解動作 -->
-  <div style="text-align:center; margin: 25px 0;">
-    <button class="btn-primary" style="font-size:18px; padding:12px 40px;" onclick="solveLP()">🚀 開始求解 (Solve)</button>
+  <!-- 5. 求解按鈕 -->
+  <div style="text-align:center; margin: 20px 0;">
+    <button type="button" class="btn-primary" style="font-size:17px; padding:10px 36px;" onclick="solveLP()">🚀 開始求解 (Solve)</button>
   </div>
 
   <!-- 6. 求解結果與限制式分析 -->
   <div id="resultBox" class="result-box">
     <h3 style="color:var(--primary); margin-top:0;">🎯 求解最佳化結果</h3>
-    <div id="statusOutput" style="font-size:16px; margin-bottom:12px;"></div>
+    <div id="statusOutput" style="font-size:15px; margin-bottom:10px;"></div>
     <div id="optimalValues" style="font-size:15px; margin-bottom:12px;"></div>
     
     <h4 style="margin-bottom:8px;">📌 限制式分析 (Binding / Slack 分析)</h4>
@@ -118,9 +116,9 @@
       <thead>
         <tr>
           <th>限制式</th>
-          <th>左側值 (LHS)</th>
+          <th>左側計算值 (LHS)</th>
           <th>符號</th>
-          <th>右側值 (RHS)</th>
+          <th>右側常數 (RHS)</th>
           <th>鬆弛量 (Slack / Surplus)</th>
           <th>狀態</th>
         </tr>
@@ -128,7 +126,7 @@
       <tbody></tbody>
     </table>
 
-    <h4 style="margin-bottom:8px; margin-top:20px;">💼 管理決策解讀</h4>
+    <h4 style="margin-bottom:8px; margin-top:18px;">💼 管理決策解讀</h4>
     <div id="managementInsight" style="line-height:1.6; font-size:14px; background:white; padding:12px; border-radius:6px; border:1px solid var(--border);"></div>
   </div>
 </div>
@@ -136,37 +134,50 @@
 <script>
   let varCount = 2;
 
-  // 初始化變數輸入欄位
+  // 變更變數數量時觸發
+  function changeVarCount() {
+    const val = parseInt(document.getElementById('numVars').value);
+    if (isNaN(val) || val < 1) {
+      alert("變數個數請至少設定為 1！");
+      return;
+    }
+    varCount = val;
+    initVariables();
+  }
+
+  // 初始化目標函數欄位
   function initVariables(customWeights = null) {
-    varCount = parseInt(document.getElementById('numVars').value) || 2;
     const objContainer = document.getElementById('objContainer');
     objContainer.innerHTML = '<span style="font-weight:bold; font-size:16px;">Z = </span>';
 
     for (let i = 1; i <= varCount; i++) {
-      const weight = customWeights && customWeights[i-1] !== undefined ? customWeights[i-1] : 0;
-      objContainer.innerHTML += `
-        <div style="display:inline-flex; align-items:center; gap:4px;">
-          <input type="number" id="c_${i}" value="${weight}" onchange="updateMathPreview()">
-          <span>x<sub>${i}</sub></span>
-          ${i < varCount ? '<span>+</span>' : ''}
-        </div>
+      const weight = (customWeights && customWeights[i - 1] !== undefined) ? customWeights[i - 1] : 0;
+      const wrap = document.createElement('div');
+      wrap.style.display = 'inline-flex';
+      wrap.style.alignItems = 'center';
+      wrap.style.gap = '4px';
+      wrap.innerHTML = `
+        <input type="number" id="c_${i}" value="${weight}" oninput="updateMathPreview()">
+        <span>x<sub>${i}</sub></span>
+        ${i < varCount ? '<span>+</span>' : ''}
       `;
+      objContainer.appendChild(wrap);
     }
-    renderConstraintRows();
+
+    refreshConstraintHeaders();
     updateMathPreview();
   }
 
-  // 渲染/重置所有限制式的變數欄位
-  function renderConstraintRows() {
+  // 讓現有每條限制式的變數欄位跟隨 varCount 同步
+  function refreshConstraintHeaders() {
     const container = document.getElementById('constraintsContainer');
     const rows = container.getElementsByClassName('constraint-row');
     for (let row of rows) {
-      const rowId = row.dataset.id;
       const inputsDiv = row.querySelector('.var-inputs');
       let html = '';
       for (let i = 1; i <= varCount; i++) {
         html += `
-          <input type="number" class="con-var" data-var="${i}" value="0" onchange="updateMathPreview()">
+          <input type="number" class="con-var" data-var="${i}" value="0" oninput="updateMathPreview()">
           <span>x<sub>${i}</sub></span>
           ${i < varCount ? '<span>+</span>' : ''}
         `;
@@ -175,19 +186,17 @@
     }
   }
 
-  // 新增一條限制式
+  // 動態新增一條限制式
   function addConstraintRow(values = null, sign = '<=', rhs = 0) {
     const container = document.getElementById('constraintsContainer');
-    const rowId = Date.now() + Math.random().toString(16).slice(2);
     const div = document.createElement('div');
     div.className = 'row constraint-row';
-    div.dataset.id = rowId;
 
     let varInputsHtml = '';
     for (let i = 1; i <= varCount; i++) {
-      const val = values && values[i-1] !== undefined ? values[i-1] : 0;
+      const val = (values && values[i - 1] !== undefined) ? values[i - 1] : 0;
       varInputsHtml += `
-        <input type="number" class="con-var" data-var="${i}" value="${val}" onchange="updateMathPreview()">
+        <input type="number" class="con-var" data-var="${i}" value="${val}" oninput="updateMathPreview()">
         <span>x<sub>${i}</sub></span>
         ${i < varCount ? '<span>+</span>' : ''}
       `;
@@ -200,33 +209,33 @@
         <option value=">=" ${sign === '>=' ? 'selected' : ''}>&ge;</option>
         <option value="=" ${sign === '=' ? 'selected' : ''}>=</option>
       </select>
-      <input type="number" class="con-rhs" value="${rhs}" onchange="updateMathPreview()">
-      <button class="btn-danger" onclick="this.parentElement.remove(); updateMathPreview();">刪除</button>
+      <input type="number" class="con-rhs" value="${rhs}" oninput="updateMathPreview()">
+      <button type="button" class="btn-danger" onclick="this.parentElement.remove(); updateMathPreview();">刪除</button>
     `;
     container.appendChild(div);
     updateMathPreview();
   }
 
-  // 即時更新數學模型文字
+  // 即時預覽數學式
   function updateMathPreview() {
     const type = document.getElementById('probType').value;
     let modelText = `${type.toUpperCase()} Z = `;
     
     let objTerms = [];
     for (let i = 1; i <= varCount; i++) {
-      const c = document.getElementById(`c_${i}`)?.value || 0;
+      const input = document.getElementById(`c_${i}`);
+      const c = input ? input.value : 0;
       objTerms.push(`${c}x${i}`);
     }
-    modelText += objTerms.join(' + ') + '\n\nSubject to:\n';
+    modelText += (objTerms.join(' + ') || '0') + '\n\nSubject to:\n';
 
     const rows = document.querySelectorAll('.constraint-row');
     if (rows.length === 0) {
-      modelText += "  (尚未建立限制式)\n";
+      modelText += "  (目前無限制式)\n";
     } else {
       rows.forEach((row, idx) => {
         let terms = [];
-        const inputs = row.querySelectorAll('.con-var');
-        inputs.forEach(input => {
+        row.querySelectorAll('.con-var').forEach(input => {
           terms.push(`${input.value}x${input.dataset.var}`);
         });
         const sign = row.querySelector('.con-sign').value;
@@ -244,66 +253,214 @@
     document.getElementById('mathModel').innerText = modelText;
   }
 
-  // 執行求解演算法 (使用 javascript-lp-solver)
+  // 內嵌式線性規劃求解器 (兩階段單形法 Two-Phase Simplex Method)
   function solveLP() {
-    if (typeof solver === 'undefined') {
-      alert("求解器引擎載入中或未連線，請檢查網路連線後重試！");
-      return;
-    }
-
-    const type = document.getElementById('probType').value; // max or min
-    const isNonNegative = document.getElementById('nonNegative').checked;
-
-    // 建立 solver 模型物件
-    const model = {
-      optimize: "Z",
-      opType: type,
-      constraints: {},
-      variables: {}
-    };
-
-    // 1. 初始化變數
+    const probType = document.getElementById('probType').value;
+    const isMax = (probType === 'max');
+    
+    // 讀取目標函數係數
+    let c = [];
     for (let i = 1; i <= varCount; i++) {
-      const varName = `x${i}`;
-      model.variables[varName] = { Z: parseFloat(document.getElementById(`c_${i}`).value) || 0 };
-      if (isNonNegative) {
-        // 設定 x_i >= 0
-        model.constraints[`nonneg_${varName}`] = { min: 0 };
-        model.variables[varName][`nonneg_${varName}`] = 1;
-      }
+      let coef = parseFloat(document.getElementById(`c_${i}`).value) || 0;
+      c.push(isMax ? coef : -coef); // 統一轉為最大化求解
     }
 
-    // 2. 加入使用者設定的限制式
+    // 讀取限制式
     const rows = document.querySelectorAll('.constraint-row');
-    const constraintRecords = [];
+    let A = [];
+    let b = [];
+    let signs = [];
+    let constraintDisplayInfo = [];
 
     rows.forEach((row, idx) => {
-      const conName = `c_${idx + 1}`;
-      const sign = row.querySelector('.con-sign').value;
-      const rhs = parseFloat(row.querySelector('.con-rhs').value) || 0;
-      
-      model.constraints[conName] = {};
-      if (sign === '<=') model.constraints[conName].max = rhs;
-      else if (sign === '>=') model.constraints[conName].min = rhs;
-      else if (sign === '=') model.constraints[conName].equal = rhs;
-
-      let lhsFormula = [];
+      let rowA = [];
       row.querySelectorAll('.con-var').forEach(input => {
-        const vId = input.dataset.var;
-        const val = parseFloat(input.value) || 0;
-        model.variables[`x${vId}`][conName] = val;
-        lhsFormula.push({ varId: vId, coef: val });
+        rowA.push(parseFloat(input.value) || 0);
       });
+      let sign = row.querySelector('.con-sign').value;
+      let rhs = parseFloat(row.querySelector('.con-rhs').value) || 0;
 
-      constraintRecords.push({
-        id: conName,
-        sign: sign,
-        rhs: rhs,
-        formula: lhsFormula
+      // RHS 負數轉正數
+      if (rhs < 0) {
+        rhs = -rhs;
+        rowA = rowA.map(v => -v);
+        if (sign === '<=') sign = '>=';
+        else if (sign === '>=') sign = '<=';
+      }
+
+      A.push(rowA);
+      b.push(rhs);
+      signs.push(sign);
+
+      constraintDisplayInfo.push({
+        id: idx + 1,
+        origRowA: rowA.slice(),
+        sign: row.querySelector('.con-sign').value,
+        rhs: parseFloat(row.querySelector('.con-rhs').value) || 0
       });
     });
 
-    // 3. 呼叫求解
-    const results = solver.Solve(model);
-    displayResults(results, constraintRecords);
+    const result = runSimplex(c, A, b, signs, isMax);
+    renderResults(result, constraintDisplayInfo);
   }
+
+  // 單形法核心運算引擎
+  function runSimplex(c, A, b, signs, isMax) {
+    const numConstraints = b.length;
+    if (numConstraints === 0) {
+      return { feasible: false, msg: "請至少新增一條限制式！" };
+    }
+
+    let slackCount = 0;
+    let artificialCount = 0;
+
+    for (let s of signs) {
+      if (s === '<=') slackCount++;
+      else if (s === '>=') { slackCount++; artificialCount++; }
+      else if (s === '=') { artificialCount++; }
+    }
+
+    const totalVars = varCount + slackCount + artificialCount;
+    let tableau = [];
+
+    let curSlack = 0;
+    let curArt = 0;
+    let basis = [];
+
+    // 建立約束行
+    for (let i = 0; i < numConstraints; i++) {
+      let row = new Array(totalVars + 1).fill(0);
+      for (let j = 0; j < varCount; j++) row[j] = A[i][j];
+
+      if (signs[i] === '<=') {
+        row[varCount + curSlack] = 1;
+        basis.push(varCount + curSlack);
+        curSlack++;
+      } else if (signs[i] === '>=') {
+        row[varCount + curSlack] = -1;
+        curSlack++;
+        row[varCount + slackCount + curArt] = 1;
+        basis.push(varCount + slackCount + curArt);
+        curArt++;
+      } else if (signs[i] === '=') {
+        row[varCount + slackCount + curArt] = 1;
+        basis.push(varCount + slackCount + curArt);
+        curArt++;
+      }
+      row[totalVars] = b[i];
+      tableau.push(row);
+    }
+
+    // 第一階段 (若有人工變數)
+    if (artificialCount > 0) {
+      let phase1Row = new Array(totalVars + 1).fill(0);
+      for (let i = 0; i < numConstraints; i++) {
+        if (signs[i] === '>=' || signs[i] === '=') {
+          for (let j = 0; j <= totalVars; j++) phase1Row[j] += tableau[i][j];
+        }
+      }
+      tableau.push(phase1Row);
+
+      if (!pivotSimplex(tableau, basis, totalVars, true)) {
+        return { feasible: false, msg: "模型無可行解 (Infeasible)！" };
+      }
+      if (Math.abs(tableau[tableau.length - 1][totalVars]) > 1e-4) {
+        return { feasible: false, msg: "模型無可行解 (Infeasible)！" };
+      }
+      tableau.pop(); // 移除第一階段目標行
+    }
+
+    // 第二階段目標行 (原始目標函數)
+    let objRow = new Array(totalVars + 1).fill(0);
+    for (let j = 0; j < varCount; j++) objRow[j] = -c[j];
+
+    // 基變數係數化為 0
+    for (let i = 0; i < numConstraints; i++) {
+      const bVar = basis[i];
+      if (bVar < varCount && Math.abs(objRow[bVar]) > 1e-9) {
+        let factor = objRow[bVar];
+        for (let j = 0; j <= totalVars; j++) objRow[j] -= factor * tableau[i][j];
+      }
+    }
+    tableau.push(objRow);
+
+    if (!pivotSimplex(tableau, basis, totalVars - artificialCount, false)) {
+      return { feasible: false, msg: "模型為無界解 (Unbounded)！" };
+    }
+
+    // 取得變數解答
+    let sol = new Array(varCount).fill(0);
+    for (let i = 0; i < numConstraints; i++) {
+      if (basis[i] < varCount) {
+        sol[basis[i]] = Math.max(0, tableau[i][totalVars]);
+      }
+    }
+
+    let optimalZ = 0;
+    for (let j = 0; j < varCount; j++) {
+      optimalZ += (isMax ? c[j] : -c[j]) * sol[j];
+    }
+
+    return { feasible: true, sol: sol, optimalZ: optimalZ };
+  }
+
+  function pivotSimplex(tab, basis, varLimit, isPhase1) {
+    const m = tab.length - 1;
+    const n = varLimit;
+
+    while (true) {
+      let enter = -1;
+      let minVal = -1e-7;
+      if (isPhase1) {
+        for (let j = 0; j < n; j++) {
+          if (tab[m][j] > 1e-7) { enter = j; break; }
+        }
+      } else {
+        for (let j = 0; j < n; j++) {
+          if (tab[m][j] < minVal) {
+            minVal = tab[m][j];
+            enter = j;
+          }
+        }
+      }
+      if (enter === -1) break; // 達到最佳
+
+      let leave = -1;
+      let minRatio = Infinity;
+      for (let i = 0; i < m; i++) {
+        if (tab[i][enter] > 1e-7) {
+          let ratio = tab[i][tab[0].length - 1] / tab[i][enter];
+          if (ratio < minRatio) {
+            minRatio = ratio;
+            leave = i;
+          }
+        }
+      }
+      if (leave === -1) return false; // 無界
+
+      // 樞紐運算 (Pivot)
+      let pivot = tab[leave][enter];
+      for (let j = 0; j < tab[0].length; j++) tab[leave][j] /= pivot;
+      for (let i = 0; i <= m; i++) {
+        if (i !== leave) {
+          let factor = tab[i][enter];
+          for (let j = 0; j < tab[0].length; j++) tab[i][j] -= factor * tab[leave][j];
+        }
+      }
+      basis[leave] = enter;
+    }
+    return true;
+  }
+
+  // 呈現結果與管理意涵
+  function renderResults(result, constraints) {
+    const resultBox = document.getElementById('resultBox');
+    const statusOutput = document.getElementById('statusOutput');
+    const optimalValues = document.getElementById('optimalValues');
+    const tbody = document.querySelector('#constraintTable tbody');
+    const managementInsight = document.getElementById('managementInsight');
+
+    resultBox.style.display = 'block';
+    tbody.innerHTML = '';
+
+    if (!result.feasible) {
