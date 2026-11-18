@@ -133,9 +133,9 @@
         <div class="field-group"><label>🥛 鮮乳總庫存 (ml)</label><input type="number" id="resMilk" value="40000"></div>
         <div class="field-group"><label>🍯 糖漿總庫存 (ml)</label><input type="number" id="resSyrup" value="3000"></div>
         <div class="field-group"><label>🥛 鮮乳每瓶容量（ml）</label><input type="number" id="milkPackMl" value="1000" min="1" step="1" inputmode="numeric"></div>
-        <div class="field-group"><label>🥛 鮮乳每瓶買入成本（元）</label><input type="number" id="priceMilk" value="60" min="0" step="1" inputmode="numeric"></div>
+        <div class="field-group"><label>🥛 鮮乳每瓶買入成本（元）</label><input type="number" id="priceMilk" value="65" min="0" step="1" inputmode="numeric"></div>
         <div class="field-group"><label>🍯 糖漿每瓶容量（ml）</label><input type="number" id="syrupPackMl" value="1000" min="1" step="1" inputmode="numeric"></div>
-        <div class="field-group"><label>🍯 糖漿每瓶買入成本（元）</label><input type="number" id="priceSyrup" value="100" min="0" step="1" inputmode="numeric"></div>
+        <div class="field-group"><label>🍯 糖漿每瓶買入成本（元）</label><input type="number" id="priceSyrup" value="102" min="0" step="1" inputmode="numeric"></div>
       </div>
       <div class="cost-help"><b>💡 原料成本自動換算</b><br>
         單杯總成本 = 咖啡豆成本 + 鮮乳成本 + 糖漿成本 + 其他單杯成本（杯材等）。<br>
@@ -172,7 +172,7 @@
             <option value="0">只賣義式濃縮（x₁）</option>
             <option value="1">只賣經典拿鐵（x₂）</option>
             <option value="2">只賣無糖美式（x₃）</option>
-            <option value="3">只賣加糖美式（x₄）</option>
+            <option value="3" selected>只賣加糖美式（x₄）</option>
             <option value="4">只賣西西里咖啡（x₅）</option>
           </select>
           <small>選「只賣某一種」時，其他四種咖啡設為 0 杯；自動計算這種咖啡至少要賣幾杯，並檢查員工工時與原料庫存是否足夠。更換品項會直接重新計算。</small>
@@ -644,6 +644,7 @@
     });
     updateDrinkCosts();
     solveModel();
+    calculateBreakEven();
   };
 </script>
 </body>
