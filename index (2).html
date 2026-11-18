@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智饗科技 (SmartF&B) - 門市產銷最佳化與決策系統</title>
+  <style>
+    :root {
+      --primary: #0f172a; --accent: #2563eb; --accent-hover: #1d4ed8;
+      --success: #16a34a; --danger: #dc2626; --warning: #f59e0b;
+      --bg: #f8fafc; --card-bg: #ffffff; --border: #e2e8f0;
+      --text-main: #1e293b; --text-muted: #64748b;
+    }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "微軟正黑體", sans-serif; }
+    body { background-color: var(--bg); margin: 0; padding: 0; color: var(--text-main); }
+    header { background-color: var(--primary); color: white; padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    header h1 { margin: 0; font-size: 19px; display: flex; align-items: center; gap: 8px; }
+    .badge-store { background: #334155; padding: 4px 10px; border-radius: 6px; font-size: 13px; }
+    .layout-container { max-width: 1400px; margin: 20px auto; padding: 0 20px; }
+    
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+    .kpi-card { background: var(--card-bg); padding: 18px; border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .kpi-title { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+    .kpi-value { font-size: 24px; font-weight: bold; color: var(--text-main); }
+    .kpi-detail { font-size: 11px; color: var(--text-muted); line-height: 1.55; margin-top: 7px; overflow-wrap: anywhere; }
+    .kpi-value.alert { color: var(--danger); }
+    .kpi-value.notice { color: #b45309; }
+    .kpi-value.ok { color: var(--success); }
+    
+    .main-grid { display: grid; grid-template-columns: 5fr 7fr; gap: 20px; align-items: start; }
+    .panel { background: var(--card-bg); border-radius: 10px; border: 1px solid var(--border); padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .panel-title { font-size: 16px; font-weight: bold; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    
+    .item-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
+    .item-header { font-weight: bold; margin-bottom: 6px; font-size: 13px; color: var(--accent); }
+    .grid-fields { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 13px; }
+    .field-group label { display: block; color: var(--text-muted); font-size: 11px; margin-bottom: 2px; }
+    .field-group input { width: 100%; padding: 5px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; }
+    
+    .btn-primary { background: var(--accent); color: white; width: 100%; margin-top: 15px; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.2s; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: #64748b; color: white; padding: 4px 10px; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; }
+    .btn-secondary:hover { background: #475569; }
+    
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+    th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #f8fafc; color: var(--text-muted); font-weight: 600; }
+    
+    .chart-container { margin-top: 20px; text-align: center; }
+    canvas { background: #ffffff; border: 1px solid var(--border); border-radius: 8px; max-width: 100%; }
+    
+    .sim-inputs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 15px; }
+    .sim-input-card { background: white; padding: 8px; border: 1px solid var(--border); border-radius: 6px; text-align: center; }
+    .sim-input-card label { font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px; }
+    .sim-input-card input { width: 100%; text-align: center; padding: 5px; border: 1px solid var(--border); border-radius: 4px; font-weight: bold; font-size: 13px; }
+    
+    .cost-detail { padding:5px 2px 0; color:#64748b; font-size:11px; line-height:1.45; }
+    .cost-help { margin-top:12px; padding:12px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; color:#334155; font-size:12px; line-height:1.8; }
+    .break-even-result { margin-top:16px; padding:16px; background:#f8fafc; border:1px solid var(--border); border-radius:8px; }
+    .break-even-count { font-size:27px; font-weight:800; color:#0f766e; margin:5px 0 13px; }
+    .break-even-total { font-weight:800; background:#ecfdf5; }
+    .break-even-summary { line-height:1.9; margin-top:12px; font-size:14px; }
+    .break-even-note { font-size:12px; line-height:1.6; color:var(--text-muted); margin-top:10px; }
+    .break-even-choice { margin-top:14px; background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:12px; }
+    .break-even-choice label { display:block; font-size:13px; font-weight:700; color:#334155; margin-bottom:8px; }
+    .break-even-choice select { width:100%; padding:11px 12px; font-size:14px; color:#0f172a; border:1px solid #cbd5e1; border-radius:6px; background:white; cursor:pointer; }
+    .break-even-choice small { display:block; margin-top:8px; line-height:1.55; color:#64748b; }
+    .break-even-mode { color:#0f766e; font-weight:700; margin-bottom:8px; font-size:13px; }
+    @media (max-width:1000px) { .main-grid { grid-template-columns:1fr; } }
+    @media (max-width:600px) { .sim-inputs { grid-template-columns:repeat(2,1fr); } .kpi-grid { grid-template-columns: repeat(2,1fr); } header { flex-wrap:wrap; gap:8px; } }
+    .progress-bar-group { margin-bottom: 10px; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+    .progress-track { height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; position: relative; }
+    .progress-fill { height: 100%; transition: width 0.3s, background-color 0.3s; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>☕ 智饗科技 (SmartF&B) <span>門市產銷最佳化與決策系統</span></h1>
+  <div class="badge-store">目前門市：雲林斗六店 ｜ 決策日期：2026/10/22</div>
+</header>
+
+<div class="layout-container">
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-title">今日預估最高毛利 Z*（連續模型）</div><div class="kpi-value" id="kpiProfit">$ 0</div></div>
+    <div class="kpi-card"><div class="kpi-title">吧檯工時負載率</div><div class="kpi-value" id="kpiLabor">0%</div></div>
+    <div class="kpi-card"><div class="kpi-title">庫存耗用最高項目</div><div class="kpi-value" id="kpiStock" style="font-size:21px;">分析中</div><div id="kpiStockDetails" class="kpi-detail"></div></div>
+    <div class="kpi-card"><div class="kpi-title">瓶頸資源警報（5 項）</div><div class="kpi-value" id="kpiBinding">分析中</div><div id="kpiBindingDetails" class="kpi-detail" aria-live="polite"></div></div>
+  </div>
+
+  <div class="main-grid">
+    <!-- 左側設定區 -->
+    <div class="panel">
+      <div class="panel-title">📋 飲品參數與 5 大資源設定</div>
+      
+      <!-- 5 項飲品參數 -->
+      <div class="item-card"><div class="item-header">x₁: 義式濃縮 (需 18g 義式豆)</div><div class="grid-fields">
+        <div class="field-group"><label>售價 (元)</label><input type="number" id="p1" value="50"></div>
+        <div class="field-group"><label>其他單杯成本（不含主要原料）</label><input type="number" id="other1" value="6" min="0" step="0.01"></div><div class="field-group"><label>自動計算總成本 (元)</label><input type="number" id="c1" value="24" readonly style="background:#eaf2ff;color:#1d4ed8;font-weight:bold;"></div>
+        <div class="field-group"><label>工時 (分)</label><input type="number" id="t1" value="3"></div>
+      </div><div id="costDetail1" class="cost-detail"></div></div>
+      <div class="item-card"><div class="item-header">x₂: 經典拿鐵 (需 18g 美式豆, 200ml 鮮乳)</div><div class="grid-fields">
+        <div class="field-group"><label>售價 (元)</label><input type="number" id="p2" value="85"></div>
+        <div class="field-group"><label>其他單杯成本（不含主要原料）</label><input type="number" id="other2" value="3" min="0" step="0.01"></div><div class="field-group"><label>自動計算總成本 (元)</label><input type="number" id="c2" value="33" readonly style="background:#eaf2ff;color:#1d4ed8;font-weight:bold;"></div>
+        <div class="field-group"><label>工時 (分)</label><input type="number" id="t2" value="4"></div>
+      </div><div id="costDetail2" class="cost-detail"></div></div>
+      <div class="item-card"><div class="item-header">x₃: 無糖美式 (需 18g 美式豆)</div><div class="grid-fields">
+        <div class="field-group"><label>售價 (元)</label><input type="number" id="p3" value="60"></div>
+        <div class="field-group"><label>其他單杯成本（不含主要原料）</label><input type="number" id="other3" value="0" min="0" step="0.01"></div><div class="field-group"><label>自動計算總成本 (元)</label><input type="number" id="c3" value="18" readonly style="background:#eaf2ff;color:#1d4ed8;font-weight:bold;"></div>
+        <div class="field-group"><label>工時 (分)</label><input type="number" id="t3" value="5"></div>
+      </div><div id="costDetail3" class="cost-detail"></div></div>
+      <div class="item-card"><div class="item-header">x₄: 加糖美式 (需 18g 美式豆, 15ml 糖漿)</div><div class="grid-fields">
+        <div class="field-group"><label>售價 (元)</label><input type="number" id="p4" value="65"></div>
+        <div class="field-group"><label>其他單杯成本（不含主要原料）</label><input type="number" id="other4" value="1.5" min="0" step="0.01"></div><div class="field-group"><label>自動計算總成本 (元)</label><input type="number" id="c4" value="21" readonly style="background:#eaf2ff;color:#1d4ed8;font-weight:bold;"></div>
+        <div class="field-group"><label>工時 (分)</label><input type="number" id="t4" value="5.5" step="0.1"></div>
+      </div><div id="costDetail4" class="cost-detail"></div></div>
+      <div class="item-card"><div class="item-header">x₅: 西西里咖啡 (需 18g 義式豆, 30ml 糖漿)</div><div class="grid-fields">
+        <div class="field-group"><label>售價 (元)</label><input type="number" id="p5" value="90"></div>
+        <div class="field-group"><label>其他單杯成本（不含主要原料）</label><input type="number" id="other5" value="17" min="0" step="0.01"></div><div class="field-group"><label>自動計算總成本 (元)</label><input type="number" id="c5" value="38" readonly style="background:#eaf2ff;color:#1d4ed8;font-weight:bold;"></div>
+        <div class="field-group"><label>工時 (分)</label><input type="number" id="t5" value="6"></div>
+      </div><div id="costDetail5" class="cost-detail"></div></div>
+
+      <!-- 資源上限設定 (員工數、包數) -->
+      <div style="font-weight:bold; margin-top:14px; margin-bottom:8px;">🏭 門市資源上限設定：</div>
+      <div class="grid-fields" style="grid-template-columns: repeat(2, 1fr);">
+        <div class="field-group"><label>👨‍💼 排班人數 (人)</label><input type="number" id="resEmp" value="2"></div>
+        <div class="field-group"><label>⏱️ 單人排班 (小時)</label><input type="number" id="resHrs" value="6"></div>
+        <div class="field-group"><label>🟤 義式豆買進 (包) *每包500g</label><input type="number" id="resEB" value="9"></div>
+        <div class="field-group"><label>🟠 美式豆買進 (包) *每包500g</label><input type="number" id="resAB" value="12"></div>
+        <div class="field-group"><label>🟤 義式豆每包成本 (元／500g)</label><input type="number" id="priceEB" value="500" min="0" step="1" inputmode="numeric"></div>
+        <div class="field-group"><label>🟠 美式豆每包成本 (元／500g)</label><input type="number" id="priceAB" value="500" min="0" step="1" inputmode="numeric"></div>
+        <div class="field-group"><label>🥛 鮮乳總庫存 (ml)</label><input type="number" id="resMilk" value="40000"></div>
+        <div class="field-group"><label>🍯 糖漿總庫存 (ml)</label><input type="number" id="resSyrup" value="3000"></div>
+        <div class="field-group"><label>🥛 鮮乳每瓶容量（ml）</label><input type="number" id="milkPackMl" value="1000" min="1" step="1" inputmode="numeric"></div>
+        <div class="field-group"><label>🥛 鮮乳每瓶買入成本（元）</label><input type="number" id="priceMilk" value="65" min="0" step="1" inputmode="numeric"></div>
+        <div class="field-group"><label>🍯 糖漿每瓶容量（ml）</label><input type="number" id="syrupPackMl" value="1000" min="1" step="1" inputmode="numeric"></div>
+        <div class="field-group"><label>🍯 糖漿每瓶買入成本（元）</label><input type="number" id="priceSyrup" value="102" min="0" step="1" inputmode="numeric"></div>
+      </div>
+      <div class="cost-help"><b>💡 原料成本自動換算</b><br>
+        單杯總成本 = 咖啡豆成本 + 鮮乳成本 + 糖漿成本 + 其他單杯成本（杯材等）。<br>
+        鮮乳成本 = 每瓶買入價格 ÷ 每瓶容量 × 使用 ml；糖漿同理。只有實際用掉的部分計入每杯成本，<b>不要在其他單杯成本或每日固定成本中重複計算豆、奶、糖漿</b>。<br>
+        範例預設：鮮乳 1000ml／60 元、糖漿 1000ml／100 元，可自行改成實際採購包裝與價格。</div>
+      <button class="btn-primary" onclick="solveModel()">🚀 執行排程最佳化與敏感度分析</button>
+    </div>
+
+    <!-- 右側結果與圖表區 -->
+    <div>
+      <div class="panel">
+        <div class="panel-title">🎯 最佳生產量排程清單</div>
+        <table>
+          <thead><tr><th>品項</th><th>建議產量</th><th>單杯毛利</th><th>預估貢獻</th></tr></thead>
+          <tbody id="planBody"></tbody>
+        </table>
+        <div id="planIntegerNote" class="kpi-detail" style="margin-top:8px;"></div>
+
+        <div class="chart-container">
+          <div style="font-weight:bold; color:var(--primary); margin-bottom:4px;">📈 資源投資效益分析 (總工時 vs 預估毛利)</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">折線斜率 = 工時影子價格；平緩處代表其他資源(豆/奶/糖漿)耗盡成為新瓶頸</div>
+          <canvas id="sensitivityChart" width="620" height="280"></canvas>
+        </div>
+      </div>
+
+      <!-- 最小值放在最大值結果正下方，方便比較 -->
+      <div class="panel" id="breakEvenPanel">
+        <div class="panel-title">📉 最小值｜損益兩平銷售排程</div>
+        <div class="field-group"><label for="fixedCost">每日固定成本（元，例如租金、固定人事費；不要重複計入單杯成本）</label><input type="number" id="fixedCost" value="2600" min="0" step="1"></div>
+        <div class="break-even-choice">
+          <label for="breakEvenDrink">☕ 飲料品項｜選擇要賣哪一種咖啡</label>
+          <select id="breakEvenDrink" onchange="calculateBreakEven()">
+            <option value="all">最佳混合組合（五種飲料自由搭配）</option>
+            <option value="0">只賣義式濃縮（x₁）</option>
+            <option value="1">只賣經典拿鐵（x₂）</option>
+            <option value="2">只賣無糖美式（x₃）</option>
+            <option value="3" selected>只賣加糖美式（x₄）</option>
+            <option value="4">只賣西西里咖啡（x₅）</option>
+          </select>
+          <small>選「只賣某一種」時，其他四種咖啡設為 0 杯；自動計算這種咖啡至少要賣幾杯，並檢查員工工時與原料庫存是否足夠。更換品項會直接重新計算。</small>
+        </div>
+        <button class="btn-primary" style="background:#0f766e;" onclick="calculateBreakEven()">📉 計算最小值｜至少賣幾杯不虧本</button>
+        <div id="breakEvenResult" class="break-even-result" style="display:none;" aria-live="polite"></div>
+      </div>
+
+      <!-- 自訂排程試算與瓶頸檢測儀表板 (What-If) -->
+      <div class="panel">
+        <div class="panel-title">
+          <span>🎛️ 自訂銷售試算與 5 大資源檢測 (What-If 模擬)</span>
+          <button class="btn-secondary" onclick="loadOptimalIntoSim()">帶入最佳解</button>
+        </div>
+        
+        <div class="sim-inputs">
+          <div class="sim-input-card"><label>義式(杯)</label><input type="number" id="sim_x1" value="0" min="0" oninput="runSimulation()"></div>
+          <div class="sim-input-card"><label>拿鐵(杯)</label><input type="number" id="sim_x2" value="0" min="0" oninput="runSimulation()"></div>
+          <div class="sim-input-card"><label>無糖美式(杯)</label><input type="number" id="sim_x3" value="0" min="0" oninput="runSimulation()"></div>
+          <div class="sim-input-card"><label>加糖美式(杯)</label><input type="number" id="sim_x4" value="0" min="0" oninput="runSimulation()"></div>
+          <div class="sim-input-card"><label>西西里(杯)</label><input type="number" id="sim_x5" value="0" min="0" oninput="runSimulation()"></div>
+        </div>
+
+        <div id="simBarsContainer">
+          <div class="progress-bar-group"><div class="progress-label"><span>吧檯總工時</span><span id="label_sim_labor">0 / 720 分</span></div>
+            <div class="progress-track"><div class="progress-fill" id="bar_sim_labor" style="width:0%; background:#16a34a;"></div></div></div>
+          <div class="progress-bar-group"><div class="progress-label"><span>義式豆消耗</span><span id="label_sim_eb">0 / 4500 g</span></div>
+            <div class="progress-track"><div class="progress-fill" id="bar_sim_eb" style="width:0%; background:#16a34a;"></div></div></div>
+          <div class="progress-bar-group"><div class="progress-label"><span>美式豆消耗</span><span id="label_sim_ab">0 / 6000 g</span></div>
+            <div class="progress-track"><div class="progress-fill" id="bar_sim_ab" style="width:0%; background:#16a34a;"></div></div></div>
+          <div class="progress-bar-group"><div class="progress-label"><span>冷藏鮮乳</span><span id="label_sim_milk">0 / 40000 ml</span></div>
+            <div class="progress-track"><div class="progress-fill" id="bar_sim_milk" style="width:0%; background:#16a34a;"></div></div></div>
+          <div class="progress-bar-group"><div class="progress-label"><span>風味糖漿</span><span id="label_sim_syrup">0 / 3000 ml</span></div>
+            <div class="progress-track"><div class="progress-fill" id="bar_sim_syrup" style="width:0%; background:#16a34a;"></div></div></div>
+        </div>
+        <div id="simVerdict" style="margin-top:14px; padding:12px; border-radius:6px; background:#f8fafc; font-size:13px; font-weight:bold;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let lastOptimalSol = [0, 0, 0, 0, 0];
+
+  function runSimplex(c, A, b) {
+    let m = b.length; let n = c.length;
+    let tab = [];
+    for(let i=0; i<m; i++){
+      let row = new Array(n+m+1).fill(0);
+      for(let j=0; j<n; j++) row[j] = A[i][j];
+      row[n+i] = 1; row[n+m] = b[i]; tab.push(row);
+    }
+    let zRow = new Array(n+m+1).fill(0);
+    for(let j=0; j<n; j++) zRow[j] = -c[j];
+    tab.push(zRow);
+    let basis = []; for(let i=0; i<m; i++) basis.push(n+i);
+
+    while(true){
+      let enter = -1, minVal = -1e-6;
+      for(let j=0; j<n+m; j++){ if(tab[m][j] < minVal){ minVal = tab[m][j]; enter = j; } }
+      if(enter === -1) break;
+      let leave = -1, minRatio = Infinity;
+      for(let i=0; i<m; i++){
+        if(tab[i][enter] > 1e-6){
+          let r = tab[i][n+m] / tab[i][enter];
+          if(r < minRatio){ minRatio = r; leave = i; }
+        }
+      }
+      if(leave === -1) return { feasible: false };
+      let p = tab[leave][enter];
+      for(let j=0; j<=n+m; j++) tab[leave][j] /= p;
+      for(let i=0; i<=m; i++){
+        if(i !== leave){
+          let f = tab[i][enter];
+          for(let j=0; j<=n+m; j++) tab[i][j] -= f * tab[leave][j];
+        }
+      }
+      basis[leave] = enter;
+    }
+    let sol = new Array(n).fill(0);
+    for(let i=0; i<m; i++) if(basis[i] < n) sol[basis[i]] = tab[i][n+m];
+    return { feasible: true, sol: sol, optimalZ: tab[m][n+m] };
+  }
+
+  function normalizeBeanPrice(id) {
+    const el = document.getElementById(id);
+    const price = Number(el.value);
+    // 採購價格皆使用非負整數（例如 500.07 元會變成 500 元）
+    if (el.value.trim() !== '' && Number.isFinite(price)) {
+      el.value = String(Math.max(0, Math.round(price)));
+    }
+  }
+
+  function updateDrinkCosts() {
+    const eb = Math.round(Number(document.getElementById('priceEB').value));
+    const ab = Math.round(Number(document.getElementById('priceAB').value));
+    const milkPack = Number(document.getElementById('milkPackMl').value);
+    const syrupPack = Number(document.getElementById('syrupPackMl').value);
+    const milkPrice = Math.round(Number(document.getElementById('priceMilk').value));
+    const syrupPrice = Math.round(Number(document.getElementById('priceSyrup').value));
+    const beanPrices = [eb, ab, ab, ab, eb];
+    const milkMl = [0, 200, 0, 0, 0];
+    const syrupMl = [0, 0, 0, 15, 30];
+    const fmt = n => Number(n).toLocaleString('zh-TW', {minimumFractionDigits:0, maximumFractionDigits:2});
+    for (let i=1; i<=5; i++) {
+      const bean = 18 * beanPrices[i-1] / 500;
+      const milk = milkMl[i-1] ? (milkPack > 0 ? milkPrice * milkMl[i-1] / milkPack : NaN) : 0;
+      const syrup = syrupMl[i-1] ? (syrupPack > 0 ? syrupPrice * syrupMl[i-1] / syrupPack : NaN) : 0;
+      const other = Number(document.getElementById('other'+i).value);
+      const cost = bean + milk + syrup + other;
+      document.getElementById('c'+i).value = Number.isFinite(cost) ? cost.toFixed(2) : '';
+      const detail = document.getElementById('costDetail'+i);
+      detail.textContent = Number.isFinite(cost)
+        ? `成本拆解：咖啡豆 $${fmt(bean)} + 鮮乳 $${fmt(milk)} + 糖漿 $${fmt(syrup)} + 其他 $${fmt(other)} = NT$ ${fmt(cost)}`
+        : '⚠ 請輸入正確的鮮乳及糖漿每瓶容量（必須大於 0）。';
+    }
+  }
+
+  function getParams() {
+    updateDrinkCosts();
+    // 毛利 = 售價 - 成本
+    let c = [
+      (parseFloat(document.getElementById('p1').value) || 0) - (parseFloat(document.getElementById('c1').value) || 0),
+      (parseFloat(document.getElementById('p2').value) || 0) - (parseFloat(document.getElementById('c2').value) || 0),
+      (parseFloat(document.getElementById('p3').value) || 0) - (parseFloat(document.getElementById('c3').value) || 0),
+      (parseFloat(document.getElementById('p4').value) || 0) - (parseFloat(document.getElementById('c4').value) || 0),
+      (parseFloat(document.getElementById('p5').value) || 0) - (parseFloat(document.getElementById('c5').value) || 0)
+    ];
+    let A = [
+      [parseFloat(document.getElementById('t1').value)||0, parseFloat(document.getElementById('t2').value)||0, parseFloat(document.getElementById('t3').value)||0, parseFloat(document.getElementById('t4').value)||0, parseFloat(document.getElementById('t5').value)||0], // 工時
+      [18, 0, 0, 0, 18],  // 義式豆
+      [0, 18, 18, 18, 0], // 美式豆
+      [0, 200, 0, 0, 0],  // 鮮乳
+      [0, 0, 0, 15, 30]   // 糖漿
+    ];
+    // 轉換資源為絕對數值 (人數->分鐘, 包數->克數)
+    let b = [
+      (parseFloat(document.getElementById('resEmp').value) || 0) * (parseFloat(document.getElementById('resHrs').value) || 0) * 60,
+      (parseFloat(document.getElementById('resEB').value) || 0) * 500,
+      (parseFloat(document.getElementById('resAB').value) || 0) * 500,
+      parseFloat(document.getElementById('resMilk').value) || 0,
+      parseFloat(document.getElementById('resSyrup').value) || 0
+    ];
+    return {c, A, b};
+  }
+
+  function drawLineChart(dataPoints, currentLabor, currentZ) {
+    const canvas = document.getElementById('sensitivityChart');
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    const padLeft = 65, padBottom = 45, padTop = 30, padRight = 30;
+    ctx.clearRect(0, 0, w, h);
+
+    const plotW = w - padLeft - padRight;
+    const plotH = h - padTop - padBottom;
+    const maxZVal = Math.max(...dataPoints.map(d => d.z));
+    const maxZ = Math.ceil((maxZVal * 1.15) / 1000) * 1000 || 8000;
+    const maxL = 1500;
+
+    function getX(l) { return padLeft + (l / maxL) * plotW; }
+    function getY(z) { return padTop + plotH - (z / maxZ) * plotH; }
+
+    ctx.strokeStyle = '#e2e8f0'; ctx.fillStyle = '#64748b'; ctx.font = '11px sans-serif'; ctx.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+      let val = (maxZ / 4) * i; let y = getY(val);
+      ctx.beginPath(); ctx.moveTo(padLeft, y); ctx.lineTo(w - padRight, y); ctx.stroke();
+      ctx.fillText(`$${Math.round(val).toLocaleString()}`, padLeft - 8, y + 4);
+    }
+
+    ctx.textAlign = 'center';
+    [0, 300, 600, 900, 1200, 1500].forEach(val => {
+      let x = getX(val);
+      ctx.beginPath(); ctx.moveTo(x, padTop); ctx.lineTo(x, padTop + plotH); ctx.stroke();
+      ctx.fillText(`${val}`, x, padTop + plotH + 16);
+    });
+
+    ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.5; ctx.beginPath();
+    ctx.moveTo(padLeft, padTop + plotH); ctx.lineTo(w - padRight, padTop + plotH);
+    ctx.moveTo(padLeft, padTop + plotH); ctx.lineTo(padLeft, padTop); ctx.stroke();
+
+    ctx.fillStyle = '#0f172a'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('門市可用總工時 (分鐘)', padLeft + plotW / 2, h - 8);
+    ctx.save(); ctx.translate(16, padTop + plotH / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('預估總毛利 Z* (NT$)', 0, 0); ctx.restore();
+
+    ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2.5; ctx.beginPath();
+    dataPoints.forEach((d, i) => {
+      let px = getX(d.labor); let py = getY(d.z);
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+
+    let cx = getX(currentLabor); let cy = getY(currentZ);
+    ctx.strokeStyle = '#dc2626'; ctx.setLineDash([3, 3]); ctx.lineWidth = 1; ctx.beginPath();
+    ctx.moveTo(cx, padTop + plotH); ctx.lineTo(cx, cy); ctx.lineTo(padLeft, cy); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#dc2626'; ctx.beginPath(); ctx.arc(cx, cy, 5.5, 0, Math.PI * 2); ctx.fill();
+    ctx.textAlign = 'left'; ctx.fillText(`目前設定 (${currentLabor}分, $${Math.round(currentZ).toLocaleString()})`, cx + 8, cy - 8);
+  }
+
+  // 以右側排程表實際顯示的整數杯數，統一計算五種資源的用量、瓶頸與庫存耗用。
+  // 「已達上限」指此排程的緊束限制，並不等同於影子價格必定大於零。
+  function updateResourceKPIs(cups, A, b) {
+    const resourceNames = ['吧檯工時', '義式咖啡豆', '美式咖啡豆', '鮮乳', '糖漿'];
+    const used = A.map(row => row.reduce((sum, qty, j) => sum + qty * cups[j], 0));
+    const percent = used.map((qty, i) => b[i] > 0 ? qty / b[i] * 100 : (qty > 0 ? Infinity : 0));
+    const tol = i => Math.max(1e-7, Math.abs(b[i]) * 1e-8);
+    const over = used.map((qty, i) => i).filter(i => used[i] > b[i] + tol(i));
+    const full = used.map((qty, i) => i).filter(i => b[i] > 0 && Math.abs(used[i] - b[i]) <= tol(i));
+    const near = used.map((qty, i) => i).filter(i => b[i] > 0 && used[i] < b[i] - tol(i) && percent[i] >= 95);
+    const fmt = i => `${resourceNames[i]} ${Number.isFinite(percent[i]) ? percent[i].toFixed(1) + '%' : '超額'}`;
+
+    const kpiLabor = document.getElementById('kpiLabor');
+    kpiLabor.textContent = b[0] > 0 ? `${percent[0].toFixed(1)}%` : (used[0] > 0 ? '超額' : '0.0%');
+    const binding = document.getElementById('kpiBinding');
+    const bindingDetails = document.getElementById('kpiBindingDetails');
+    binding.classList.remove('alert', 'notice', 'ok');
+    if (over.length > 0) {
+      binding.textContent = `${over.length} 項超額`;
+      binding.classList.add('alert');
+    } else if (full.length > 0) {
+      binding.textContent = `${full.length} 項已達上限`;
+      binding.classList.add('alert');
+    } else if (near.length > 0) {
+      binding.textContent = `${near.length} 項接近上限`;
+      binding.classList.add('notice');
+    } else {
+      binding.textContent = '正常（未滿）';
+      binding.classList.add('ok');
+    }
+    const notes = [];
+    if (over.length) notes.push(`超出上限：${over.map(fmt).join('、')}`);
+    if (full.length) notes.push(`已用滿：${full.map(fmt).join('、')}`);
+    if (near.length) notes.push(`接近上限：${near.map(fmt).join('、')}`);
+    if (!notes.length) notes.push('五項資源都尚未達 95%');
+    bindingDetails.textContent = notes.join('｜');
+
+    const inventory = [1, 2, 3, 4];
+    const highest = Math.max(...inventory.map(i => percent[i]));
+    const leading = inventory.filter(i => Math.abs(percent[i] - highest) < 0.00001);
+    const stock = document.getElementById('kpiStock');
+    stock.textContent = leading.length > 1
+      ? `${leading.length} 項並列 (${highest.toFixed(1)}%)`
+      : `${resourceNames[leading[0]]} ${highest.toFixed(1)}%`;
+    document.getElementById('kpiStockDetails').textContent = leading.length > 1
+      ? leading.map(i => resourceNames[i]).join('、') : '依最佳解整數杯數計算';
+  }
+
+  function solveModel() {
+    if (["milkPackMl","syrupPackMl"].some(id => !(Number(document.getElementById(id).value)>0))) return;
+    const {c, A, b} = getParams();
+    const baseSol = runSimplex(c, A, b);
+
+    if(baseSol.feasible) {
+      lastOptimalSol = baseSol.sol.map(v => Math.max(0, Math.round(v)));
+      document.getElementById('kpiProfit').innerText = `$ ${Math.round(baseSol.optimalZ).toLocaleString()}`;
+      updateResourceKPIs(lastOptimalSol, A, b);
+
+      const names = ['義式濃縮 (x₁)', '經典拿鐵 (x₂)', '無糖美式 (x₃)', '加糖美式 (x₄)', '西西里咖啡 (x₅)'];
+      let html = '';
+      lastOptimalSol.forEach((val, i) => {
+        html += `<tr><td>${names[i]}</td><td><b>${val} 杯</b></td><td>$ ${c[i].toFixed(2)}</td><td>$ ${Math.round(val*c[i]).toLocaleString()}</td></tr>`;
+      });
+      document.getElementById('planBody').innerHTML = html;
+      const integerProfit = lastOptimalSol.reduce((sum, n, i) => sum + n * c[i], 0);
+      document.getElementById('planIntegerNote').textContent =
+        `表中整數杯數的預估毛利為 NT$ ${integerProfit.toLocaleString('zh-TW', {maximumFractionDigits:2})}；上方 Z* 為連續線性規劃理論值，四捨五入後不一定是最佳整數解。`;
+
+      let dataPoints = [];
+      for(let l = 0; l <= 1500; l += 50) {
+        let bTemp = [...b]; bTemp[0] = l;
+        let s = runSimplex(c, A, bTemp);
+        dataPoints.push({ labor: l, z: s.feasible ? s.optimalZ : 0 });
+      }
+      drawLineChart(dataPoints, b[0], baseSol.optimalZ);
+      runSimulation();
+    }
+  }
+
+  function runSimulation() {
+    const {c, A, b} = getParams();
+    const simSol = [
+      Math.max(0, parseFloat(document.getElementById('sim_x1').value) || 0),
+      Math.max(0, parseFloat(document.getElementById('sim_x2').value) || 0),
+      Math.max(0, parseFloat(document.getElementById('sim_x3').value) || 0),
+      Math.max(0, parseFloat(document.getElementById('sim_x4').value) || 0),
+      Math.max(0, parseFloat(document.getElementById('sim_x5').value) || 0)
+    ];
+    const totalSimProfit = simSol.reduce((sum, count, i) => sum + count * c[i], 0);
+    const usages = A.map(row => row.reduce((sum, val, i) => sum + val * simSol[i], 0));
+    
+    const units = ['分', 'g', 'g', 'ml', 'ml'];
+    const barIds = ['labor', 'eb', 'ab', 'milk', 'syrup'];
+    let hasViolation = false; let overMessages = [];
+
+    usages.forEach((used, i) => {
+      const limit = b[i]; const pct = limit > 0 ? (used / limit) * 100 : 0;
+      const isOver = used > limit;
+      if (isOver) { hasViolation = true; overMessages.push(`超額耗用 ${(used - limit).toFixed(0)} ${units[i]}`); }
+      document.getElementById(`label_sim_${barIds[i]}`).innerText = `${used.toFixed(0)} / ${limit} ${units[i]} (${pct.toFixed(1)}%)`;
+      const fillEl = document.getElementById(`bar_sim_${barIds[i]}`);
+      fillEl.style.width = `${Math.min(100, pct)}%`;
+      fillEl.style.backgroundColor = isOver ? '#dc2626' : (pct >= 95 ? '#f59e0b' : '#16a34a');
+    });
+
+    const verdictEl = document.getElementById('simVerdict');
+    if (hasViolation) {
+      verdictEl.style.background = '#fef2f2'; verdictEl.style.border = '1px solid #fecaca'; verdictEl.style.color = '#991b1b';
+      verdictEl.innerHTML = `❌ 【不可行排程方案】：已有資源耗盡爆表！<br>• 異常：${overMessages.join('、')}。`;
+    } else {
+      verdictEl.style.background = '#f0fdf4'; verdictEl.style.border = '1px solid #bbf7d0'; verdictEl.style.color = '#166534';
+      const simFull = usages.map((used, i) => i).filter(i => b[i] > 0 && Math.abs(usages[i]-b[i]) <= Math.max(1e-7, b[i]*1e-8));
+      const simNames = ['工時', '義式豆', '美式豆', '鮮乳', '糖漿'];
+      verdictEl.innerHTML = `✔ 【可行排程方案】：資源皆在門市限額內！<br>• 此組合預估總毛利：<b>$ ${Math.round(totalSimProfit).toLocaleString()} 元</b>。${simFull.length ? `<br>• ⚠ 已達上限：${simFull.map(i=>simNames[i]).join('、')}（${simFull.length} 項）` : ''}`;
+    }
+  }
+
+  function loadOptimalIntoSim() {
+    ['sim_x1', 'sim_x2', 'sim_x3', 'sim_x4', 'sim_x5'].forEach((id, i) => document.getElementById(id).value = lastOptimalSol[i]);
+    runSimulation();
+  }
+
+  // 整數杯數損益兩平：在五項資源限制下尋找最少總杯數。
+  // 採用分枝界限搜尋；若計算量過大，明確告知未能證明最優。
+  function calculateBreakEven() {
+    const output = document.getElementById('breakEvenResult');
+    output.style.display = 'block';
+    const fixed = Number(document.getElementById('fixedCost').value);
+    const {c, A, b} = getParams();
+    const names = ['義式濃縮', '經典拿鐵', '無糖美式', '加糖美式', '西西里咖啡'];
+    const selectedMode = document.getElementById('breakEvenDrink').value;
+    const onlyDrink = selectedMode === 'all' ? null : Number(selectedMode);
+    if (!Number.isFinite(fixed) || fixed < 0 || [...b, ...A.flat()].some(v => !Number.isFinite(v) || v < 0) || c.some(v => !Number.isFinite(v)) || ["priceEB","priceAB","priceMilk","priceSyrup",...Array.from({length:5},(_,i)=>"other"+(i+1))].some(id => Number(document.getElementById(id).value)<0) || ["milkPackMl","syrupPackMl"].some(id => !(Number(document.getElementById(id).value)>0))) {
+      output.textContent = '請輸入有效的非負成本、工時與庫存數字。'; return;
+    }
+    if (fixed === 0) {
+      renderBreakEvenResult([0,0,0,0,0], fixed, c, false, onlyDrink);
+      return;
+    }
+
+    // 單品模式：其他四種產量必須為 0。依毛利計算所需最少整數杯數，
+    // 並逐項檢查工時、兩類豆、牛奶與糖漿等五項資源。
+    if (onlyDrink !== null) {
+      const idx = onlyDrink;
+      const fmt = n => Number(n).toLocaleString('zh-TW', {maximumFractionDigits:2});
+      if (c[idx] <= 0) {
+        output.innerHTML = `<div class="break-even-mode">單品銷售：只賣${names[idx]}</div><strong style="color:#b91c1c;">目前無法損益兩平</strong><p>${names[idx]}單杯毛利為 NT$ ${fmt(c[idx])}，無法靠增加銷量支付每日固定成本 NT$ ${fmt(fixed)}。</p>`;
+        return;
+      }
+      const needed = Math.ceil((fixed - 1e-8) / c[idx]);
+      const maxByResource = A.map((row, r) => row[idx] > 0 ? Math.max(0, Math.floor((b[r]+1e-8)/row[idx])) : Infinity);
+      const maxCups = Math.min(...maxByResource);
+      if (needed > maxCups) {
+        const labels = ['員工工時', '義式豆', '美式豆', '鮮乳', '糖漿'];
+        const bottlenecks = labels.filter((_, r) => maxByResource[r] === maxCups).join('、');
+        output.innerHTML = `
+          <div class="break-even-mode">單品銷售：只賣${names[idx]}</div>
+          <div style="font-size:18px;font-weight:700;color:#b91c1c;">⚠️ 目前資源不足，無法損益兩平</div>
+          <div class="break-even-summary">
+            單杯毛利：<b>NT$ ${fmt(c[idx])}</b><br>
+            為支付固定成本，至少需要：<b>${fmt(needed)} 杯</b><br>
+            目前資源最多可生產：<b>${fmt(maxCups)} 杯</b><br>
+            主要限制資源：<b>${bottlenecks}</b><br>
+            目前最大可貢獻毛利：<b>NT$ ${fmt(maxCups*c[idx])}</b>（固定成本 NT$ ${fmt(fixed)}）
+          </div>
+          <div class="break-even-note">這個模式只計算「全部賣${names[idx]}」；可調整庫存、工時、售價或成本，再重新計算。</div>`;
+        return;
+      }
+      const quantities = [0,0,0,0,0];
+      quantities[idx] = needed;
+      renderBreakEvenResult(quantities, fixed, c, false, onlyDrink);
+      return;
+    }
+
+    const order = [0,1,2,3,4].sort((i,j) => c[j]-c[i]);
+    if (c[order[0]] <= 0) {
+      output.textContent = '所有飲品單杯貢獻毛利皆小於或等於 0，無法靠增加銷售支付固定成本。'; return;
+    }
+    const maxEach = c.map((_,i) => Math.min(100000, ...A.map((row,r) => row[i] > 0 ? Math.floor((b[r]+1e-8)/row[i]) : 100000)));
+    const remaining = b.slice();
+    let best = null, bestCount = Infinity, visited = 0, capped = false;
+    const cap = 350000;
+    function search(pos, count, profit, quantities) {
+      if (++visited > cap) { capped = true; return; }
+      if (profit + 1e-8 >= fixed) {
+        if (count < bestCount) { bestCount = count; best = quantities.slice(); }
+        return;
+      }
+      if (pos === order.length || count >= bestCount) return;
+      const topMargin = c[order[pos]];
+      if (topMargin <= 0 || count + Math.ceil((fixed-profit-1e-8)/topMargin) >= bestCount) return;
+      const idx = order[pos];
+      let limit = Math.min(maxEach[idx], bestCount === Infinity ? 100000 : bestCount-count-1);
+      A.forEach((row,r) => { if (row[idx] > 0) limit = Math.min(limit, Math.floor((remaining[r]+1e-8)/row[idx])); });
+      limit = Math.min(limit, Math.ceil((fixed-profit)/c[idx]));
+      for (let q=limit; q>=0; q--) {
+        quantities[idx] = q;
+        for (let r=0;r<b.length;r++) remaining[r] -= A[r][idx]*q;
+        search(pos+1, count+q, profit+c[idx]*q, quantities);
+        for (let r=0;r<b.length;r++) remaining[r] += A[r][idx]*q;
+        if (capped) break;
+      }
+      quantities[idx] = 0;
+    }
+    search(0,0,0,[0,0,0,0,0]);
+    if (!best) {
+      output.textContent = capped ? '搜尋量超出上限，尚無法確認最低杯數；請調整固定成本或資源條件。' : '在目前工時及原料限制下，無法達到損益兩平。';
+      return;
+    }
+    renderBreakEvenResult(best, fixed, c, capped);
+  }
+
+  function renderBreakEvenResult(best, fixed, margins, capped, onlyDrink = null) {
+    const output = document.getElementById('breakEvenResult');
+    const names = ['義式濃縮 (x₁)', '經典拿鐵 (x₂)', '無糖美式 (x₃)', '加糖美式 (x₄)', '西西里咖啡 (x₅)'];
+    const fmt = n => Number(n).toLocaleString('zh-TW', {maximumFractionDigits:2});
+    const revenue = best.reduce((sum,q,i) => sum + q*Number(document.getElementById('p'+(i+1)).value),0);
+    const contribution = best.reduce((sum,q,i) => sum + q*margins[i],0);
+    const cupCount = best.reduce((sum,q) => sum+q,0);
+    const rows = names.map((name,i) =>
+      `<tr><td>${name}</td><td><b>${fmt(best[i])} 杯</b></td><td>NT$ ${fmt(margins[i])}</td><td>NT$ ${fmt(best[i]*margins[i])}</td></tr>`
+    ).join('');
+    const modeLabel = onlyDrink === null ? '最佳混合組合（五種飲料自由搭配）' : `單品銷售：只賣${names[onlyDrink].replace(/ \(.*?\)/, '')}`;
+    output.innerHTML = `
+      <div class="break-even-mode">☕ ${modeLabel}</div>
+      <div style="font-weight:bold;color:#0f766e;">📋 各飲品最低銷售杯數</div>
+      <div class="break-even-count">${fmt(cupCount)} 杯 <span style="font-size:14px;color:#64748b;font-weight:500;">${capped?'目前找到的可行方案':'最少需銷售'}</span></div>
+      <table aria-label="最少銷售杯數各飲品明細">
+        <thead><tr><th>飲料品項</th><th>建議杯數</th><th>單杯毛利</th><th>毛利貢獻</th></tr></thead>
+        <tbody>${rows}<tr class="break-even-total"><td>總計</td><td>${fmt(cupCount)} 杯</td><td>—</td><td>NT$ ${fmt(contribution)}</td></tr></tbody>
+      </table>
+      <div class="break-even-summary">
+        營業額：<b>NT$ ${fmt(revenue)}</b><br>
+        總貢獻毛利：<b>NT$ ${fmt(contribution)}</b><br>
+        每日固定成本：<b>NT$ ${fmt(fixed)}</b><br>
+        扣除固定成本後利潤：<b style="color:#0f766e;">NT$ ${fmt(contribution-fixed)}</b>
+      </div>
+      <div class="break-even-note">${capped?'搜尋已達運算上限，此組合可損益兩平，但尚未證明杯數最少。':onlyDrink===null?'以整數杯數計算，已在目前五項資源限制內確認最少杯數。':'其他四種飲料均為 0 杯；已驗證此單品的最低整數杯數及五項資源限制。'}此模型假設飲品能按照建議數量售出，單杯成本為變動成本。</div>`;
+  }
+
+
+  window.onload = () => {
+    ['priceEB', 'priceAB', 'priceMilk', 'priceSyrup'].forEach(id => {
+      document.getElementById(id).addEventListener('change', () => {
+        normalizeBeanPrice(id);
+        updateDrinkCosts();
+      });
+    });
+    ['milkPackMl', 'syrupPackMl'].forEach(id => {
+      document.getElementById(id).addEventListener('change', () => {
+        const el = document.getElementById(id);
+        const qty = Number(el.value);
+        el.value = String(Number.isFinite(qty) ? Math.max(1, Math.round(qty)) : 1000);
+        updateDrinkCosts();
+      });
+    });
+    document.querySelectorAll('input[type="number"]').forEach(el => {
+      el.addEventListener('input', () => {
+        updateDrinkCosts();
+        document.getElementById('breakEvenResult').style.display = 'none';
+      });
+    });
+    const productionInputIds = [
+      ...Array.from({length:5},(_,i)=>'p'+(i+1)),
+      ...Array.from({length:5},(_,i)=>'other'+(i+1)),
+      ...Array.from({length:5},(_,i)=>'t'+(i+1)),
+      'priceEB','priceAB','priceMilk','priceSyrup','milkPackMl','syrupPackMl','resEmp','resHrs','resEB','resAB','resMilk','resSyrup'
+    ];
+    productionInputIds.forEach(id => {
+      document.getElementById(id).addEventListener('change', solveModel);
+    });
+    updateDrinkCosts();
+    solveModel();
+    calculateBreakEven();
+  };
+</script>
+</body>
+</html>
